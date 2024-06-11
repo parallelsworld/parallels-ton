@@ -2165,6 +2165,71 @@ describe('JettonWallet', () => {
         });
     });
 
+    describe('Claim Functions', () => {
+        it('should allow users to claim resources', async () => {
+            const userJettonWallet = await userWallet(deployer.address);
+            const initialClaims = await jettonMinter.getClaims(deployer.address);
+            const resourceId = 1; // Example resource ID
+    
+            const claimResult = await jettonMinter.claimResource(deployer.getSender(), resourceId);
+            
+            expect(claimResult.transactions).toHaveTransaction({
+                from: deployer.address,
+                to: jettonMinter.address,
+                success: true
+            });
+            
+            const updatedClaims = await jettonMinter.getClaims(deployer.address);
+            expect(updatedClaims.length).toBe(initialClaims.length + 1);
+            expect(updatedClaims).toContain(resourceId);
+        });
+    
+        it('should allow users to claim rewards', async () => {
+            const userJettonWallet = await userWallet(deployer.address);
+            const initialBalance = await userJettonWallet.getJettonBalance();
+            const rewardId = 1; // Example reward ID
+    
+            const rewardResult = await jettonMinter.claimReward(deployer.getSender(), rewardId);
+            
+            expect(rewardResult.transactions).toHaveTransaction({
+                from: deployer.address,
+                to: jettonMinter.address,
+                success: true
+            });
+            
+            const updatedBalance = await userJettonWallet.getJettonBalance();
+            expect(updatedBalance).toBeGreaterThan(initialBalance);
+        });
+    
+        it('should return all claims of a user', async () => {
+            const claims = await jettonMinter.getAllClaims(deployer.address);
+            expect(claims).toBeInstanceOf(Array);
+            claims.forEach(claim => {
+                expect(claim).toHaveProperty('id');
+                expect(claim).toHaveProperty('timestamp');
+            });
+        });
+    
+        it('should return latest claims of a user', async () => {
+            const latestClaims = await jettonMinter.getLatestClaims(deployer.address);
+            expect(latestClaims).toBeInstanceOf(Array);
+            latestClaims.forEach(claim => {
+                expect(claim).toHaveProperty('id');
+                expect(claim).toHaveProperty('timestamp');
+            });
+        });
+    
+        it('should return claims of a specific type', async () => {
+            const resourceId = 1; // Example resource ID
+            const claims = await jettonMinter.getClaims(deployer.address, resourceId);
+            expect(claims).toBeInstanceOf(Array);
+            claims.forEach(claim => {
+                expect(claim).toHaveProperty('id', resourceId);
+                expect(claim).toHaveProperty('timestamp');
+            });
+        });
+    });
+    
     describe('Upgrade', () => {
         let prevState : BlockchainSnapshot;
 
@@ -2302,3 +2367,5 @@ describe('JettonWallet', () => {
         expect(await childJettonWallet.getJettonBalance()).toEqual(toNano('0.5'));
     });
 });
+
+

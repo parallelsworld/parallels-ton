@@ -27,6 +27,13 @@ const op::upgrade = 0x2508d66a;
 const op::call_to = 0x235caf52;
 const op::change_metadata_uri = 0xcb862902;
 
+;; parallels minter
+const op::claim_resource = 1001;
+const op::claim_reward = 1002;
+const op::get_all_claims = 1003;
+const op::get_latest_claims = 1004;
+const op::get_claims = 1005;
+
 ;; jetton-wallet
 
 const op::set_status = 0xeed236d3;
